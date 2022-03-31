@@ -14,16 +14,21 @@ import Swal from "sweetalert2";
 export class Layout extends Component {
     constructor(props){
         super(props);
-        this.state = ({ step: 0, prevElections: [], lastAnswer: ''});
+        this.state = ({ step: 0, prevElections: [], lastAnswer: '', info: []});
     }
 
 
-    // Metodos ------------------------------------------------------------------------------------------- //
-    clickHandler = (e)=> {
-        // Si el step llega o pasa 7, muestro el mensaje final y corto el resto de la funcion
-        if (this.state.step >= 7 ) { return this.finalAlert?.()}
+    componentDidMount(){
+        this.setState({...this.state, info: data});
+    }
 
-        // Sino, defino a que step debo pasar, y actualizo el state correspondientemente
+    // Metodos --------------------------------------------------------------------------------------- //
+    clickHandler = (e)=> {
+        if (this.state.step >= 7 ) {
+            this.finalAlert?.();
+            return
+        } 
+        // Defino a que step debo pasar, y actualizo el state correspondientemente
         const numberToIncrease = this.defineStepNumber(e.target.value);
         this.updateState(numberToIncrease, e.target.value);
     }
@@ -49,18 +54,17 @@ export class Layout extends Component {
     // Actualiza las propiedades del state
     updateState = (n, answer)=>{
         if (this.state.lastAnswer !== '') {
-            const newElections = this.state.prevElections.concat([this.state.lastAnswer]);
-            this.setState({...this.state, step: this.state.step + n, lastAnswer: answer, prevElections: newElections})
+            this.setState({...this.state, step: this.state.step + n, lastAnswer: answer, prevElections: [...this.state.prevElections, answer]})
             return
         }
         this.setState({...this.state, step: this.state.step + n, lastAnswer: answer})
     }
 
-    componentDidUpdate(){
+    componentDidUpdate(prevProps, prevState) {
         console.log('El componente se actualizo');
     }
 
-    // Configuracion del alert final usando sweetAlert ----------------------------------------------------- //
+    // Configuracion del alert final usando sweetAlert----------------------------------------------- //
     finalAlert = ()=> {
         Swal.fire({
             title: 'Felicidades, llegaste al final',
@@ -82,13 +86,14 @@ export class Layout extends Component {
     }
 
     render(){
+        const Data = this.state.info[this.state.step] || data[0];
         return (
         <div className="layout">
             <History 
-                text={data[this.state.step].historia}
+                text={Data.historia}
             />
             <Options 
-                options={data[this.state.step].opciones}
+                options={Data.opciones}
                 handler={this.clickHandler}
             />
             <PrevElection 
